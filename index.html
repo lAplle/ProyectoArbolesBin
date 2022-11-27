@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>not an ordinary document (im dying dis got me pretty exhausted)</title>
+    </head>
+    <body style="background-color: black; color: white; text-align: center; justify-content: center;">
+        <input type="text" id="Input" placeholder="Escriba su expresión" onkeypress="press(event)" style="justify-content: center;">
+        <button id="boton" onclick="getExpression()" style="visibility: hidden;">Enviar</button>
+        <p>Presione Enter</p>
+        <p id="Results"></p>
+    </body>
+    <script>
+        class Nodo{
+            constructor(value){
+                this.value = value;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+    class BinaryTree{
+    constructor(){
+        this.root = null;
+        this.pre = "";
+        this.post = "";
+    }
+    add(newBorn, left, right){
+        newBorn.left = left;
+        newBorn.right = right;
+        return true;
+    }
+    generateTree(expression){
+        let array = this.reader(expression);
+        let nodeLeft = null;
+        let nodeRight = null;
+        let root = null;
+        let i = 0;
+        while(array[i] != undefined){
+            if(array[i].value == "*" || array[i].value == "/"){
+                nodeLeft = array[i-1];
+                nodeRight = array[i+1];
+                root = array[i];
+                this.add(root, nodeLeft, nodeRight);
+                array[i-1] = root;
+                for(let j = i; j < array.length; j++){
+                    array[j] = array[j+2];
+                    if(array[j+2] == undefined){
+                        j = array.length;
+                    }
+                }
+                i--;
+            }
+            i++;
+        }
+        i = 0;
+        while(array[i] != undefined){
+            if(array[i].value == "+" || array[i].value == "-"){
+                nodeLeft = array[i-1];
+                nodeRight = array[i+1];
+                root = array[i];
+                this.add(root, nodeLeft, nodeRight);
+                array[i-1] = root;
+                for(let j = i; j < array.length; j++){
+                    array[j] = array[j+2];
+                    if(array[j+2] == undefined){
+                        j = array.length;
+                    }
+                }
+                i--;
+            }
+            i++;
+        }
+        this.root = array[0];
+        return [this.postOrder(),this.preOrder(), this.root];
+    }
+    reader(string){
+        let nodo = new Nodo();
+        let array = [];
+        for(let i = 0; i < string.length; i++){
+            nodo = new Nodo(string[i]);
+            array.push(nodo);
+        }
+        return array;
+    }
+    inOrder(){
+        if(this.root == null){
+            return "";
+        } else {
+            this._inOrder(this.root);
+        }
+    }
+    _inOrder(root){
+        if(root.left != null){
+            this._inOrder(root.left);
+        } 
+        if(root.right != null){
+            this._inOrder(root.right);
+        }
+    }
+    preOrder(){
+        this.pre = "";
+        if(this.root == null){
+            return "";
+        } else {
+        this._preOrder(this.root)
+        }
+        return this.pre;
+    }
+    _preOrder(root){
+        this.pre += root.value;
+        if(root.left != null){
+            this._preOrder(root.left);
+        } 
+        if(root.right != null){
+            this._preOrder(root.right);
+        }
+    }
+    postOrder(){
+        this.post = "";
+        if(this.root == null){
+            return "";
+        } else {
+        this._postOrder(this.root)
+        }
+        return this.post;
+    }
+    _postOrder(root){
+        if(root.left != null){
+            this._postOrder(root.left);
+        } 
+        if(root.right != null){
+            this._postOrder(root.right);
+        }
+        this.post += root.value;
+    }
+}
+
+class Calculator{
+    constructor(){
+        this.numbers = [];
+    }
+    preResults(preorder){
+        this.numbers = [];
+        let num_der = 0;
+        let num_izq = 0;
+        for(let i = preorder.length-1; i >= 0; i--){
+            if(preorder[i] == "+" || preorder[i] == "-" || preorder[i] == "/" || preorder[i] == "*"){
+                num_izq = Number(this.numbers.pop());
+                num_der = Number(this.numbers.pop());
+                if (preorder[i] == '+') {
+                    this.numbers.push(num_izq + num_der);
+                } else if (preorder[i] == '-') {
+                    this.numbers.push(num_izq - num_der);
+                } else if (preorder[i] == '/') {
+                    this.numbers.push(num_izq / num_der);
+                } else if (preorder[i] == '*') {
+                    this.numbers.push(num_izq * num_der);
+                }
+            }else{
+                this.numbers.push(preorder[i]);
+            }
+        }
+        return Number(this.numbers[0]);
+    }
+    postResults(postorder){
+        this.numbers = [];
+        let num_der = 0;
+        let num_izq = 0;
+        for(let i = 0; i < postorder.length; i++){
+            if(postorder[i] == "+" || postorder[i] == "-" || postorder[i] == "/" || postorder[i] == "*"){
+                num_der = Number(this.numbers.pop());
+                num_izq = Number(this.numbers.pop());
+                if (postorder[i] == '+') {
+                    this.numbers.push(num_izq + num_der);
+                } else if (postorder[i] == '-') {
+                    this.numbers.push(num_izq - num_der);
+                } else if (postorder[i] == '/') {
+                    this.numbers.push(num_izq / num_der);
+                } else if (postorder[i] == '*') {
+                    this.numbers.push(num_izq * num_der);
+                }
+            }else{
+                this.numbers.push(postorder[i]);
+            }
+        }
+        return this.numbers[0];
+    }
+}
+
+    function press(e) {
+    if (e.keyCode === 13 && !e.shiftKey) {
+        e.preventDefault();
+        
+        document.getElementById("boton").click()
+        ;
+    }
+}
+
+    const myTree = new BinaryTree();
+    const myCalculator = new Calculator();
+    let expression;
+    let results;
+    let preOrder = "";
+    let postOrder = "";
+    let root = null;
+    let output;
+    function getExpression() {
+        expression = document.getElementById('Input').value;
+        [postOrder,preOrder,root] = myTree.generateTree(expression);
+        output = ["PreOrder: " + preOrder + '<br>' + 
+        "PostOrder: " + postOrder + '<br>' + 
+        "Resultado del PreOrder: " + 
+        myCalculator.preResults(preOrder) + '<br>' + 
+        "Resultado del PostOrder: " + 
+        myCalculator.postResults(postOrder)];
+        results = document.getElementById('Results').innerHTML = output;
+    }
+    </script>
+</html>
